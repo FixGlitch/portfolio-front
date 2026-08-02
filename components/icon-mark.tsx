@@ -155,15 +155,16 @@ export function IconMark({
           <span className="absolute right-px bottom-0 left-0 hidden h-[1.5px] bg-[repeating-linear-gradient(to_right,var(--color-brand)_0px,var(--color-brand)_3px,transparent_3px,transparent_6px)] md:block" />
         </span>
       </span>
-      {createPortal(
-        <AnimatePresence>
-          {visible && textRect && containerRect &&
-            layout.map((badge) => (
-              <Badge key={badge.text} badge={badge} textRect={textRect} containerRect={containerRect} />
-            ))}
-        </AnimatePresence>,
-        document.body
-      )}
+      {typeof window !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {visible && textRect && containerRect &&
+              layout.map((badge) => (
+                <Badge key={badge.text} badge={badge} textRect={textRect} containerRect={containerRect} />
+              ))}
+          </AnimatePresence>,
+          document.body
+        )}
     </>
   )
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { PageShell } from "@/components/page-shell"
 import { AboutClient } from "./about-client"
-import { getContentMessages } from "@/lib/content"
+import { getMessages } from "next-intl/server"
 
 export async function generateMetadata({
   params,
@@ -9,7 +9,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
-  const messages = await getContentMessages(locale)
+  const messages = await getMessages({ locale })
   const about = messages.about as Record<string, string>
 
   return {

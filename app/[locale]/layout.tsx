@@ -1,12 +1,9 @@
-import { NextIntlClientProvider } from "next-intl"
 import { ThemeProvider } from "@/components/theme-provider"
 import { MotionProvider } from "@/components/motion-provider"
 import { Dock } from "@/components/dock"
 import type { Metadata } from "next"
 import { routing } from "@/i18n/routing"
-import { getContentMessages } from "@/lib/content"
-
-export const dynamic = "force-dynamic"
+import { NextIntlClientProvider } from "next-intl"
 
 export async function generateMetadata({
   params,
@@ -14,7 +11,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
-  const messages = await getContentMessages(locale)
+  const messages = (await import(`../../messages/${locale}.ts`)).default
   const home = messages.home as Record<string, string>
 
   return {
@@ -36,7 +33,7 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
-  const messages = await getContentMessages(locale)
+  const messages = (await import(`../../messages/${locale}.ts`)).default
 
   return (
     <NextIntlClientProvider messages={messages}>
