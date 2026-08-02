@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { PageShell } from "@/components/page-shell"
-import { getProject } from "@/lib/projects"
-import { ProjectClient } from "./project-client"
+import { PageShell } from "@/components/templates/page-shell"
+import { ProjectTemplate } from "@/components/templates/project-template"
+import { getProject } from "@/lib/api"
 
 export async function generateMetadata({
   params,
@@ -14,7 +14,7 @@ export async function generateMetadata({
   if (!project) return { title: "Project · Lucas Blanco" }
   return {
     title: `${project.title} · Lucas Blanco`,
-    description: project.metaDescription,
+    description: project.metaDescription ?? project.summary,
   }
 }
 
@@ -29,7 +29,7 @@ export default async function ProjectPage({
 
   return (
     <PageShell>
-      <ProjectClient project={project} />
+      <ProjectTemplate project={project} />
     </PageShell>
   )
 }

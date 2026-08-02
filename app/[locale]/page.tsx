@@ -1,7 +1,6 @@
-import { PageShell } from "@/components/page-shell"
-import { HomeClient } from "./home-client"
-import { getProjects } from "@/lib/projects"
-import { getSettings } from "@/lib/content"
+import { PageShell } from "@/components/templates/page-shell"
+import { HomeTemplate } from "@/components/templates/home-template"
+import { getProjects, getSettings } from "@/lib/api"
 
 export default async function HomePage({
   params,
@@ -13,7 +12,7 @@ export default async function HomePage({
 
   return (
     <PageShell>
-      <HomeClient projects={projects} settings={settings} />
+      <HomeTemplate projects={projects} settings={settings} />
     </PageShell>
   )
 }

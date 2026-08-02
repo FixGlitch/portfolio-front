@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
-import { PageShell } from "@/components/page-shell"
-import { ContactClient } from "./contact-client"
-import { getSettings } from "@/lib/content"
 import { getMessages } from "next-intl/server"
+import { PageShell } from "@/components/templates/page-shell"
+import { ContactTemplate } from "@/components/templates/contact-template"
+import { getSettings } from "@/lib/api"
 
 export async function generateMetadata({
   params,
@@ -11,7 +11,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   const messages = await getMessages({ locale })
-  const contact = messages.contact as Record<string, string>
+  const contact = (messages.contact ?? {}) as Record<string, string>
 
   return {
     title: contact.metaTitle,
@@ -29,7 +29,7 @@ export default async function ContactPage({
 
   return (
     <PageShell>
-      <ContactClient settings={settings} />
+      <ContactTemplate settings={settings} />
     </PageShell>
   )
 }
