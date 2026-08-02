@@ -1,0 +1,21 @@
+{
+  "name": "Luca Félix - Frontend Engineer & Designer",
+  "short_name": "Luca Félix",
+  "description": "Personal portfolio of Luca Félix, a frontend engineer who thinks like a designer.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdfdfc",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
