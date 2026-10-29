@@ -367,13 +367,13 @@ export function Dock() {
   return (
     <DockContext.Provider value={mouseX}>
       <nav
-        aria-label="Site"
+        aria-label={t("siteLabel")}
         className="fixed inset-x-0 bottom-10 z-50 flex justify-center pointer-events-none print:hidden"
       >
         <div
           data-dock
           role="toolbar"
-          aria-label="Application dock"
+          aria-label={t("dockLabel")}
           className="pointer-events-auto relative flex items-end gap-3 rounded-full border border-border bg-gradient-to-br from-stone-50/80 from-25% to-stone-100/80 p-1 pl-3 pr-3 pb-3 backdrop-blur-sm dark:border-white/10 dark:from-white/10 dark:to-white/5"
           style={{ height: 64 }}
           onMouseMove={(e) => mouseX.set(e.pageX)}

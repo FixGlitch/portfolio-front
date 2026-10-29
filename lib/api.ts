@@ -13,21 +13,33 @@ export function imageUrl(url: string | null | undefined): string {
   return `${STRAPI_URL}${url.startsWith("/") ? url : `/${url}`}`
 }
 
+// Thrown when Strapi cannot be reached or fails. Lets the error boundary show a
+// proper "unavailable" state instead of rendering pages with missing text.
+export class ContentUnavailableError extends Error {
+  constructor() {
+    super("Strapi content is unavailable")
+    this.name = "ContentUnavailableError"
+  }
+}
+
+// Returns null for missing data (4xx); throws ContentUnavailableError when Strapi is down (network or 5xx).
 export async function strapiFetch<T>(
   path: string,
   params?: Record<string, string>,
 ): Promise<T | null> {
   const search = new URLSearchParams(params)
+  let res: Response
   try {
-    const res = await fetch(`${STRAPI_URL}/api${path}?${search.toString()}`, {
+    res = await fetch(`${STRAPI_URL}/api${path}?${search.toString()}`, {
       next: { revalidate: 60 },
     })
-    if (!res.ok) return null
-    const json = await res.json()
-    return (json?.data ?? null) as T | null
   } catch {
-    return null
+    throw new ContentUnavailableError()
   }
+  if (res.status >= 500) throw new ContentUnavailableError()
+  if (!res.ok) return null
+  const json = await res.json()
+  return (json?.data ?? null) as T | null
 }
 
 const STRAPI_META_KEYS = ["id", "documentId", "locale", "publishedAt", "createdAt", "updatedAt"]
@@ -146,10 +158,11 @@ function mapProject(raw: Record<string, unknown>): Project {
   }
 }
 
-async function fetchProjects(locale: string): Promise<Project[]> {
+async function fetchProjects(locale: string, params: Record<string, string> = {}): Promise<Project[]> {
   const data = await strapiFetch<Record<string, unknown>[]>("/projects", {
     locale,
     populate: "image",
+    ...params,
   })
   return (data ?? []).map(mapProject)
 }
@@ -163,6 +176,10 @@ export async function getProjects(locale: string): Promise<Project[]> {
 }
 
 export async function getProject(slug: string, locale: string): Promise<Project | null> {
-  const projects = await getProjects(locale)
-  return projects.find((project) => project.slug === slug) ?? null
+  const filter = { "filters[slug][$eq]": slug }
+  let [project] = await fetchProjects(locale, filter)
+  if (!project && locale !== "en") {
+    ;[project] = await fetchProjects("en", filter)
+  }
+  return project ?? null
 }

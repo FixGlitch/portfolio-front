@@ -1,22 +1,49 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type FormEvent } from "react"
 import { useTranslations } from "next-intl"
 import { Send, Check } from "lucide-react"
+import { sendContactMessage, type ContactResult } from "@/lib/contact-action"
+
+type Status = "idle" | "sending" | "sent" | ContactResult
 
 export function ContactForm() {
   const t = useTranslations("contact")
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [message, setMessage] = useState("")
-  const [sent, setSent] = useState(false)
+  const [status, setStatus] = useState<Status>("idle")
 
-  function handleSend() {
-    const subject = encodeURIComponent(`Message from ${name || "your site"}`)
-    const body = encodeURIComponent(`${message}\n\n— ${name} (${email})`)
-    window.location.href = `mailto:blancolucas112@gmail.com?subject=${subject}&body=${body}`
-    setSent(true)
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const form = new FormData(e.currentTarget)
+    setStatus("sending")
+
+    const result = await sendContactMessage({
+      name: name.trim(),
+      email: email.trim(),
+      message: message.trim(),
+      website: String(form.get("contact-website") ?? ""),
+    })
+
+    if (result === "ok") {
+      setStatus("sent")
+      setName("")
+      setEmail("")
+      setMessage("")
+    } else {
+      setStatus(result)
+    }
   }
+
+  const errorText =
+    status === "validation"
+      ? t("validationError")
+      : status === "rate_limited"
+        ? t("rateLimited")
+        : status === "error"
+          ? t("errorMessage")
+          : null
 
   return (
     <div className="rounded-2xl border border-border/80 bg-card/40 p-5 shadow-xs backdrop-blur-sm dark:bg-card/20 sm:p-6">
@@ -25,7 +52,7 @@ export function ContactForm() {
         <span className="text-xs text-muted-foreground">{t("repliesIn")}</span>
       </div>
 
-      <form className="mt-5 space-y-4" onSubmit={(e) => e.preventDefault()}>
+      <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
         <input
           type="text"
           name="contact-website"
@@ -40,6 +67,8 @@ export function ContactForm() {
             <span className="mb-1.5 block text-xs font-medium tracking-wide text-muted-foreground">{t("nameLabel")}</span>
             <input
               type="text"
+              required
+              maxLength={120}
               placeholder={t("namePlaceholder")}
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -50,6 +79,7 @@ export function ContactForm() {
             <span className="mb-1.5 block text-xs font-medium tracking-wide text-muted-foreground">{t("emailLabel")}</span>
             <input
               type="email"
+              required
               placeholder={t("emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -61,6 +91,8 @@ export function ContactForm() {
           <span className="mb-1.5 block text-xs font-medium tracking-wide text-muted-foreground">{t("messageLabel")}</span>
           <textarea
             rows={4}
+            required
+            maxLength={5000}
             placeholder={t("messagePlaceholder")}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
@@ -69,17 +101,21 @@ export function ContactForm() {
         </label>
 
         <div className="flex flex-col gap-4 pt-1 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted-foreground">{t("replyNote")}</p>
+          <p className="text-sm text-muted-foreground" role="status" aria-live="polite">
+            {errorText ?? t("replyNote")}
+          </p>
 
           <button
-            onClick={handleSend}
-            disabled={sent}
+            type="submit"
+            disabled={status === "sending" || status === "sent"}
             className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-foreground px-6 text-sm font-medium text-background transition-colors hover:bg-foreground/80 disabled:opacity-50 sm:w-auto"
           >
-            {sent ? (
+            {status === "sent" ? (
               <>
                 <Check className="h-4 w-4" /> {t("sent")}
               </>
+            ) : status === "sending" ? (
+              t("sending")
             ) : (
               <>
                 {t("send")} <Send className="size-3.5" />

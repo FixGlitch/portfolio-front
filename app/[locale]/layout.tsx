@@ -3,6 +3,7 @@ import { getMessages } from "next-intl/server"
 import { NextIntlClientProvider } from "next-intl"
 import { routing } from "@/i18n/routing"
 import { BaseLayout } from "@/components/templates/base-layout"
+import { ContentUnavailable } from "@/components/templates/content-unavailable"
 
 export async function generateMetadata({
   params,
@@ -10,8 +11,8 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
-  const messages = await getMessages({ locale })
-  const home = (messages.home ?? {}) as Record<string, string>
+  const messages = await getMessages({ locale }).catch(() => null)
+  const home = (messages?.home ?? {}) as Record<string, string>
 
   return {
     title: home.metaTitle,
@@ -29,7 +30,8 @@ export default async function LocaleLayout({
 }: {
   children: React.ReactNode
 }) {
-  const messages = await getMessages()
+  const messages = await getMessages().catch(() => null)
+  if (!messages) return <ContentUnavailable />
 
   return (
     <NextIntlClientProvider messages={messages}>

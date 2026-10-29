@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import { Geist, Fira_Code } from "next/font/google"
 import { getLocale } from "next-intl/server"
+import { getSettings } from "@/lib/api"
 import "./globals.css"
 
 const geistSans = Geist({
@@ -15,19 +16,26 @@ const firaCode = Fira_Code({
   display: "swap",
 })
 
-export const metadata: Metadata = {
-  title: "Lucas Blanco, Desarrollador Fullstack",
-  description:
-    "Desarrollador fullstack con más de 6 años de experience. Frontend, backend, bases de datos y todo lo que conecta ambas puntas.",
-  manifest: "/manifest.webmanifest",
-  icons: {
-    icon: [
-      { url: "/icon-light-32x32.png", media: "(prefers-color-scheme: light)" },
-      { url: "/icon-dark-32x32.png", media: "(prefers-color-scheme: dark)" },
-      { url: "/icon.svg", type: "image/svg+xml" },
-    ],
-    apple: "/apple-icon.png",
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  // Metadata must not take the whole page down when Strapi is unreachable.
+  const siteUrl = await getSettings("en")
+    .then((settings) => settings.siteUrl)
+    .catch(() => undefined)
+  return {
+    metadataBase: new URL(siteUrl ?? "http://localhost:3000"),
+    title: "Lucas Blanco, Desarrollador Fullstack",
+    description:
+      "Desarrollador fullstack con más de 6 años de experiencia. Frontend, backend, bases de datos y todo lo que conecta ambas puntas.",
+    manifest: "/manifest.webmanifest",
+    icons: {
+      icon: [
+        { url: "/icon-light-32x32.png", media: "(prefers-color-scheme: light)" },
+        { url: "/icon-dark-32x32.png", media: "(prefers-color-scheme: dark)" },
+        { url: "/icon.svg", type: "image/svg+xml" },
+      ],
+      apple: "/apple-icon.png",
+    },
+  }
 }
 
 export const viewport: Viewport = {
@@ -43,7 +51,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const locale = await getLocale()
+  // getLocale runs the i18n request config, which fetches content. Fall back so <html lang> still renders.
+  const locale = await getLocale().catch(() => "en")
   return (
     <html lang={locale} suppressHydrationWarning className={`${geistSans.variable} ${firaCode.variable} bg-background`}>
       <body className="font-sans antialiased">

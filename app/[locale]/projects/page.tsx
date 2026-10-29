@@ -10,8 +10,8 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
-  const messages = await getMessages({ locale })
-  const projects = (messages.projects ?? {}) as Record<string, string>
+  const messages = await getMessages({ locale }).catch(() => null)
+  const projects = (messages?.projects ?? {}) as Record<string, string>
 
   return {
     title: projects.metaTitle,

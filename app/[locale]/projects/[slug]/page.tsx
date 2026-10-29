@@ -10,8 +10,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string; locale: string }>
 }): Promise<Metadata> {
   const { slug, locale } = await params
-  const project = await getProject(slug, locale)
-  if (!project) return { title: "Project · Lucas Blanco" }
+  const project = await getProject(slug, locale).catch(() => null)
+  if (!project) return { title: "Lucas Blanco" }
   return {
     title: `${project.title} · Lucas Blanco`,
     description: project.metaDescription ?? project.summary,
